@@ -4,6 +4,7 @@ import com.lee.filter.AnyRolesFilter;
 import com.lee.shiro.matcher.CredentialsMatcher;
 import com.lee.shiro.realm.CustomRealm;
 import org.apache.shiro.cache.MemoryConstrainedCacheManager;
+import org.apache.shiro.cache.ehcache.EhCacheManager;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
@@ -80,20 +81,18 @@ public class ShiroConfig {
         return filterRegistrationBean;
     }
 
-
-    //创建SecurityManager
-    @Bean("securityManager")
-    public SecurityManager securityManager(@Qualifier("customRealm")CustomRealm customRealm){
-        DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
-        securityManager.setRealm(customRealm);
-        return securityManager;
-    }
-
-
     //自定义密码比较器
     @Bean("credentialsMatcher")
     public CredentialsMatcher credentialsMatcher(){
         return new CredentialsMatcher();
+    }
+
+
+    @Bean
+    public EhCacheManager getEhCacheManager() {
+        EhCacheManager em = new EhCacheManager();
+        em.setCacheManagerConfigFile("classpath:config/shiro-ehcache.xml");
+        return em;
     }
 
     //自定义realm
@@ -105,20 +104,6 @@ public class ShiroConfig {
         //设置自定义密码比较器
         customRealm.setCredentialsMatcher(matcher);
         return customRealm;
-    }
-
-    //开启aop注解方式登录、校验角色和权限
-    @Bean
-    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(@Qualifier("securityManager")SecurityManager securityManager){
-        AuthorizationAttributeSourceAdvisor advisor = new AuthorizationAttributeSourceAdvisor();
-        advisor.setSecurityManager(securityManager);
-        return advisor;
-    }
-    @Bean
-    public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator(){
-        DefaultAdvisorAutoProxyCreator creator = new DefaultAdvisorAutoProxyCreator();
-        creator.setProxyTargetClass(true);
-        return creator;
     }
 
     /**
@@ -142,5 +127,35 @@ public class ShiroConfig {
         manager.setCookie(rememberMeCookie);
         return manager;
     }
+
+
+    //创建SecurityManager
+    @Bean("securityManager")
+    public SecurityManager securityManager(@Qualifier("customRealm")CustomRealm customRealm){
+        DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
+        securityManager.setRealm(customRealm);
+        //设置rememberMe管理器
+        securityManager.setRememberMeManager(rememberMeManager(rememberMeCookie()));
+        //使用ehCache缓存
+        securityManager.setCacheManager(getEhCacheManager());
+        return securityManager;
+    }
+
+
+
+    //开启aop注解方式登录、校验角色和权限
+    @Bean
+    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(@Qualifier("securityManager")SecurityManager securityManager){
+        AuthorizationAttributeSourceAdvisor advisor = new AuthorizationAttributeSourceAdvisor();
+        advisor.setSecurityManager(securityManager);
+        return advisor;
+    }
+    @Bean
+    public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator(){
+        DefaultAdvisorAutoProxyCreator creator = new DefaultAdvisorAutoProxyCreator();
+        creator.setProxyTargetClass(true);
+        return creator;
+    }
+
 
 }

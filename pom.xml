@@ -65,15 +65,19 @@
         </dependency>
 
         <!-- shiro集成ehcache实现用户认证的本地缓存, ehcache2.5及其以后的版本会出错-->
+        <!-- ehchache -->
         <dependency>
-            <artifactId>ehcache-core</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.sf.ehcache</groupId>
-            <version>2.4.5</version>
+            <artifactId>ehcache</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.shiro</groupId>
             <artifactId>shiro-ehcache</artifactId>
-            <version>1.2.2</version>
+            <version>1.3.2</version>
         </dependency>
 
     </dependencies>
