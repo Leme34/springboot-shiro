@@ -58,6 +58,8 @@ public class ShiroConfig {
         // authc:认证后才能访问的路径,所以 "/*" 一般放在最下面
         //当应用开启了rememberMe时,用户下次访问时可以是一个user,但不会是authc,因为authc是需要重新认证的
         LinkedHashMap<String, String> filterChainDefinitionsMap = new LinkedHashMap<>();
+        //配置退出 过滤器,其中的具体的退出代码Shiro已经替我们实现了，登出后跳转配置的loginUrl
+        filterChainDefinitionsMap.put("/logout", "logout");
         filterChainDefinitionsMap.put("/login.html","anon");
         filterChainDefinitionsMap.put("/subLogin","anon");
         filterChainDefinitionsMap.put("/403.html","anon");
